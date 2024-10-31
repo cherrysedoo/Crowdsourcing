@@ -31,3 +31,16 @@
         contribution-phases: (list 10 uint)
     }
 )
+
+;; Contribution tracking
+(define-map contributions
+    {project-id: uint, contribution-id: uint}
+    {
+        contributor: principal,
+        description: (string-utf8 500),
+        value: uint,
+        timestamp: uint,
+        phase: uint
+    }
+)
+
