@@ -84,3 +84,70 @@
         (ok project-id)
     )
 )
+
+;; Contribute to Project
+(define-public (contribute-to-project
+    (project-id uint)
+    (contribution-description (string-utf8 500))
+    (contribution-value uint)
+)
+    (let
+        (
+            (project (unwrap! (map-get? projects {project-id: project-id}) ERR-PROJECT-NOT-FOUND))
+            (current-contributor-data
+                (default-to
+                    {
+                        total-contributions: u0,
+                        token-rewards: u0,
+                        contribution-phases: (list)
+                    }
+                    (map-get? project-contributors {project-id: project-id, contributor: tx-sender})
+                )
+            )
+            (contribution-id (+ (var-get last-contribution-id) u1))
+        )
+
+        ;; Validate project is active
+        (asserts! (get is-active project) ERR-PROJECT-CLOSED)
+
+        ;; Validate contribution meets threshold
+        (asserts! (>= contribution-value (get contribution-threshold project)) ERR-INVALID-CONTRIBUTION)
+
+        ;; Record contribution
+        (map-set contributions
+            {project-id: project-id, contribution-id: contribution-id}
+            {
+                contributor: tx-sender,
+                description: contribution-description,
+                value: contribution-value,
+                timestamp: block-height,
+                phase: (get current-phase project)
+            }
+        )
+
+        ;; Update contributor data
+        (map-set project-contributors
+            {project-id: project-id, contributor: tx-sender}
+            (merge current-contributor-data
+                {
+                    total-contributions: (+ (get total-contributions current-contributor-data) contribution-value),
+                    contribution-phases: (unwrap-panic (as-max-len? (append (get contribution-phases current-contributor-data) (get current-phase project)) u10))
+                }
+            )
+        )
+
+        ;; Update project total funding
+        (map-set projects
+            {project-id: project-id}
+            (merge project
+                {total-funding: (+ (get total-funding project) contribution-value)}
+            )
+        )
+
+        ;; Update contribution counter
+        (var-set last-contribution-id contribution-id)
+
+        (ok contribution-id)
+    )
+)
+
