@@ -197,3 +197,39 @@
     )
 )
 
+;; Project Closure
+(define-public (close-project
+    (project-id uint)
+)
+    (let
+        (
+            (project (unwrap! (map-get? projects {project-id: project-id}) ERR-PROJECT-NOT-FOUND))
+        )
+
+        ;; Only project owner can close project
+        (asserts! (is-eq tx-sender (get owner project)) ERR-NOT-AUTHORIZED)
+
+        ;; Mark project as inactive
+        (map-set projects
+            {project-id: project-id}
+            (merge project
+                {is-active: false}
+            )
+        )
+
+        (ok true)
+    )
+)
+
+;; State Variables
+(define-data-var last-project-id uint u0)
+(define-data-var last-contribution-id uint u0)
+
+;; Read-only Functions for Querying
+(define-read-only (get-project-details (project-id uint))
+    (map-get? projects {project-id: project-id})
+)
+
+(define-read-only (get-contributor-data (project-id uint) (contributor principal))
+    (map-get? project-contributors {project-id: project-id, contributor: contributor})
+)
