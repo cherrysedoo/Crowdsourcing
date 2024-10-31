@@ -151,3 +151,25 @@
     )
 )
 
+;; Reward Contributors
+(define-public (distribute-contributor-rewards
+    (project-id uint)
+)
+    (let
+        (
+            (project (unwrap! (map-get? projects {project-id: project-id}) ERR-PROJECT-NOT-FOUND))
+        )
+
+        ;; Only project owner can distribute rewards
+        (asserts! (is-eq tx-sender (get owner project)) ERR-NOT-AUTHORIZED)
+
+        ;; TODO: Implement reward calculation logic
+        ;; This could involve:
+        ;; 1. Calculating rewards based on contribution value
+        ;; 2. Minting/transferring tokens to contributors
+        ;; 3. Tracking total rewards distributed
+
+        (ok true)
+    )
+)
+
