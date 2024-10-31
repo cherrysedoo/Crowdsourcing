@@ -173,3 +173,27 @@
     )
 )
 
+;; Project Phase Management
+(define-public (advance-project-phase
+    (project-id uint)
+)
+    (let
+        (
+            (project (unwrap! (map-get? projects {project-id: project-id}) ERR-PROJECT-NOT-FOUND))
+        )
+
+        ;; Only project owner can advance phases
+        (asserts! (is-eq tx-sender (get owner project)) ERR-NOT-AUTHORIZED)
+
+        ;; Update project phase
+        (map-set projects
+            {project-id: project-id}
+            (merge project
+                {current-phase: (+ (get current-phase project) u1)}
+            )
+        )
+
+        (ok true)
+    )
+)
+
