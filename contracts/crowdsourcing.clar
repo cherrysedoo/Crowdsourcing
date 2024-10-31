@@ -22,3 +22,12 @@
     }
 )
 
+;; Contributor tracking for each project
+(define-map project-contributors
+    {project-id: uint, contributor: principal}
+    {
+        total-contributions: uint,
+        token-rewards: uint,
+        contribution-phases: (list 10 uint)
+    }
+)
